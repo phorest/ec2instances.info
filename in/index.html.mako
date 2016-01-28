@@ -37,15 +37,16 @@
             <span class="caret"></span>
           </a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="javascript:;" data-region='us-east-1'>US East</a></li>
-            <li><a href="javascript:;" data-region='us-west-1'>US West (Northern California)</a></li>
-            <li><a href="javascript:;" data-region='us-west-2'>US West (Oregon)</a></li>
-            <li><a href="javascript:;" data-region='sa-east-1'>South America</a></li>
-            <li><a href="javascript:;" data-region='eu-west-1'>EU (Ireland)</a></li>
-            <li><a href="javascript:;" data-region='eu-central-1'>EU (Frankfurt)</a></li>
+            <li><a href="javascript:;" data-region='ap-northeast-2'>Asia-Pacific (Seoul)</a></li>
             <li><a href="javascript:;" data-region='ap-southeast-1'>Asia-Pacific (Singapore)</a></li>
             <li><a href="javascript:;" data-region='ap-southeast-2'>Asia-Pacific (Sydney)</a></li>
             <li><a href="javascript:;" data-region='ap-northeast-1'>Asia-Pacific (Tokyo)</a></li>
+            <li><a href="javascript:;" data-region='eu-central-1'>EU (Frankfurt)</a></li>
+            <li><a href="javascript:;" data-region='eu-west-1'>EU (Ireland)</a></li>
+            <li><a href="javascript:;" data-region='sa-east-1'>South America (Sao Paolo)</a></li>
+            <li><a href="javascript:;" data-region='us-east-1'>US East</a></li>
+            <li><a href="javascript:;" data-region='us-west-1'>US West (Northern California)</a></li>
+            <li><a href="javascript:;" data-region='us-west-2'>US West (Oregon)</a></li>
           </ul>
         </div>
 
@@ -119,9 +120,9 @@
           <th class="storage">Storage</th>
           <th class="architecture">Arch</th>
           <th class="networkperf">Network Performance</th>
-          <th class="ebs-throughput">EBS Optimized: Throughput (Mbps)</th>
+          <th class="ebs-throughput">EBS Optimized: Throughput</th>
           <th class="ebs-iops">EBS Optimized: Max 16K IOPS</th>
-          <th class="ebs-max-bandwidth">EBS Optimized: Max Bandwidth (MB/s)</th>
+          <th class="ebs-max-bandwidth">EBS Optimized: Max Bandwidth</th>
           <th class="maxips">
             <abbr title="Adding additional IPs requires launching the instance in a VPC.">Max IPs</abbr>
           </th>
@@ -154,9 +155,10 @@
           <td class="apiname">${inst['instance_type']}</td>
           <td class="memory"><span sort="${inst['memory']}">${inst['memory']} GB</span></td>
           <td class="computeunits">
+            % if inst['ECU'] == 'variable':
+            <span sort="0"><a href="http://aws.amazon.com/ec2/instance-types/#burst" target="_blank">Burstable</a></span>
+            % else:
             <span sort="${inst['ECU']}">${"%g" % (inst['ECU'],)} units</span>
-            % if inst.get('burstable'):
-             (<a href="http://aws.amazon.com/ec2/instance-types/#burst" target="_blank">Burstable</a>)
             % endif
           </td>
           <td class="cores">
@@ -165,7 +167,11 @@
             </span>
           </td>
           <td class="ecu-per-core">
+            % if inst['ECU'] == 'variable':
+            <span sort="0"><a href="http://aws.amazon.com/ec2/instance-types/#burst" target="_blank">Burstable</a></span>
+            % else:
             <span sort="${inst['ECU_per_core']}">${"%.4g" % inst['ECU_per_core']} units</span>
+            % endif
           </td>
           <td class="storage">
             <% storage = inst['storage'] %>
@@ -196,12 +202,12 @@
           </td>
           <td class="ebs-throughput">
             <span sort="${inst['ebs_throughput']}">
-              ${inst['ebs_throughput']}
+              ${inst['ebs_throughput']} Mb/s <!-- Not MB/s! -->
             </span>
           </td>
           <td class="ebs-iops">
             <span sort="${inst['ebs_iops']}">
-              ${inst['ebs_iops']}
+              ${inst['ebs_iops']} IOPS
             </span>
           </td>
           <td class="ebs-max-bandwidth">
@@ -209,7 +215,7 @@
             <span sort="0">N/A</span>
             % else:
             <span sort="${inst['ebs_max_bandwidth']}">
-              ${inst['ebs_max_bandwidth']}
+              ${inst['ebs_max_bandwidth']} MB/s
             </span>
             % endif
           </td>
@@ -224,7 +230,7 @@
             ${'Yes' if inst['enhanced_networking'] else 'No'}
           </td>
           <td class="vpc-only">
-            ${'VPC only' if inst['vpc_only'] else 'VPC and EC2Classic'}
+            ${'Yes' if inst['vpc_only'] else 'No'}
           </td>
           <td class="linux-virtualization">
             % if inst['linux_virtualization_types']:
